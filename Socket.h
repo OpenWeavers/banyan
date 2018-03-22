@@ -3,11 +3,17 @@
 
 #include <string>
 #include <netinet/in.h>
+#include <arpa/inet.h>
+
+const int MAXHOSTNAME = 200;
+const int MAXCONNECTIONS = 5;
+const int MAXRECV = 500;
+
 
 class Socket    {
 private:
     int sockfd;
-    sockaddr_in m_addr;
+    sockaddr_in host_addr;
 public:
     Socket();
     virtual ~Socket();

@@ -28,6 +28,7 @@ def get_host_ip():
 
 class Peer:
     def __init__(self):
+        logger.info('Initializing Banyan in your local network...')
         self.bcast_soc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.bcast_soc.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.bcast_soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -38,7 +39,7 @@ class Peer:
         self.bcast_recv_soc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.bcast_recv_soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.bcast_recv_soc.bind(('', BCAST_RECV))
-        logger.info('Initializing Banyan in your local network...')
+        logger.info("Started at " + get_host_ip() + ":" + str(CONN_PORT))
 
     def discover(self):
         self.bcast_soc.sendto(b'PING', ('255.255.255.255', BCAST_RECV))

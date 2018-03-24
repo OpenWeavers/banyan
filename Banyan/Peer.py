@@ -16,9 +16,7 @@ handler.setFormatter(formatter)
 # add the handlers to the logger
 logger.addHandler(handler)
 
-logger.warning('Initializing Banyan in your local network...')
-logger.debug("Hi")
-logger.error("GG")
+logger.info('Initializing Banyan in your local network...')
 
 
 CONN_PORT = 5000

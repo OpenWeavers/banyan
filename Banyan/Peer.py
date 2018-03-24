@@ -28,13 +28,14 @@ class Peer:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((addr[0], 5000))
         s.sendall(b'ALIVE:Hey this is a bot!')
+        data = s.recv(1024)
         s.close()
         print(msg, addr)
 
     def get_packet(self):
         conn, addr = self.conn_soc.accept()
         print("Got message from {0} ".format(addr))
-        msg = self.conn_soc.recv(1024)
+        msg = conn.recv(1024)
         print(msg)
 
     def __del__(self):

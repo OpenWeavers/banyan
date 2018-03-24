@@ -16,8 +16,6 @@ handler.setFormatter(formatter)
 # add the handlers to the logger
 logger.addHandler(handler)
 
-logger.info('Initializing Banyan in your local network...')
-
 
 CONN_PORT = 5000
 BCAST_PORT = 5001
@@ -40,23 +38,23 @@ class Peer:
         self.bcast_recv_soc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.bcast_recv_soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.bcast_recv_soc.bind(('', BCAST_RECV))
+        logger.info('Initializing Banyan in your local network...')
 
     def discover(self):
-        self.bcast_soc.sendto(b'this is a broadcast', ('255.255.255.255', BCAST_RECV))
+        self.bcast_soc.sendto(b'PING', ('255.255.255.255', BCAST_RECV))
 
     # Should handle case where broadcast by itself should not be catched!
     def recieve_bcast(self):
         while True:
             msg, addr = self.bcast_recv_soc.recvfrom(1024)
-            if addr[0] == get_host_ip():
-                logger.info(get_host_ip())
-                continue
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect((addr[0], 5000))
-            s.sendall(b'ALIVE:Hey this is a bot!')
-            data = s.recv(1024)
-            s.close()
-            print(msg, addr)
+            if addr[0] != get_host_ip():
+                logger.info("Broadcast from " + addr[0])
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.connect((addr[0], 5000))
+                s.sendall(b'PONG')
+                #data = s.recv(1024)
+                s.close()
+                print(msg, addr)
 
     def get_packet(self):
         conn, addr = self.conn_soc.accept()

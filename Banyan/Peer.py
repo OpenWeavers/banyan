@@ -1,9 +1,33 @@
 import socket
 from threading import Thread
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+# create a file handler
+handler = logging.FileHandler('peer.log')
+handler.setLevel(logging.INFO)
+
+# create a logging format
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+
+# add the handlers to the logger
+logger.addHandler(handler)
+
+logger.warning('Initializing Banyan in your local network...')
+logger.debug("Hi")
+logger.error("GG")
+
 
 CONN_PORT = 5000
 BCAST_PORT = 5001
 BCAST_RECV = 5002
+
+
+def get_host_ip():
+    return [(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]
 
 
 class Peer:
@@ -24,13 +48,17 @@ class Peer:
 
     # Should handle case where broadcast by itself should not be catched!
     def recieve_bcast(self):
-        msg, addr = self.bcast_recv_soc.recvfrom(1024)
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((addr[0], 5000))
-        s.sendall(b'ALIVE:Hey this is a bot!')
-        data = s.recv(1024)
-        s.close()
-        print(msg, addr)
+        while True:
+            msg, addr = self.bcast_recv_soc.recvfrom(1024)
+            if addr[0] == get_host_ip():
+                logger.info(get_host_ip())
+                continue
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect((addr[0], 5000))
+            s.sendall(b'ALIVE:Hey this is a bot!')
+            data = s.recv(1024)
+            s.close()
+            print(msg, addr)
 
     def get_packet(self):
         conn, addr = self.conn_soc.accept()
@@ -47,4 +75,5 @@ if __name__ == '__main__':
     p = Peer()
     Thread(target=p.get_packet).start()
     Thread(target=p.recieve_bcast).start()
+    p.discover()
     del p

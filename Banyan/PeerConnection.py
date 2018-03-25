@@ -41,23 +41,23 @@ class PeerConnection:
         logger.info("Banyan version : " + str(banyan_version))
         if banyan_version == BANYAN_VERSION:
             message_type = self.sock_file.read(4)
-            logger.log(message_type + " recieved")
+            logger.info(message_type.decode() + " recieved")
             data_len = self.sock_file.read(4)
             data_len = int(struct.unpack("!L", data_len)[0])
-            data = ""
+            data = b''
 
             while len(data) != data_len:
                 segment = self.sock_file.read(min(2048, data_len - len(data)))
-                if not len(data):
+                if not len(segment):
                     break
                 data += segment
 
             if len(data) != data_len:
                 return None, None
 
-            return message_type, data
-
-        return None, None
+            return message_type.decode(), data.decode()
+        else:
+            return None, None
 
 
 def __del__(self):

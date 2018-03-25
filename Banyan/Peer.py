@@ -65,7 +65,6 @@ class Peer:
         message_type, data = peer.receive()
         print(message_type + " : " + data)
 
-
     def send_to_peer(self, peer_addr, message_type, data):
         p = PeerConnection(peer_addr)
         p.send(message_type, data)

@@ -1,3 +1,4 @@
+import json
 import socket
 from threading import Thread
 
@@ -18,7 +19,8 @@ def get_host_ip():
 
 
 class Peer:
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
         logger.info('Initializing Banyan in your local network...')
         self.bcast_soc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.bcast_soc.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
@@ -37,6 +39,12 @@ class Peer:
         #self.bcast_recv_soc.bind(('', BCAST_RECV))
         logger.info("Started at " + get_host_ip() + ":" + str(CONN_PORT))
 
+    def add_peer(self, addr, data):
+        if addr[0] not in self.peer_list.keys():
+            json_data = json.loads(data)
+            self.peer_list[addr[0]] = data['name']
+            logger.info("Added {} to peer list".format(data['name']))
+
     def discover(self):
         self.bcast_soc.sendto(b'PING', ('255.255.255.255', BCAST_PORT))
 
@@ -51,7 +59,7 @@ class Peer:
                 #data = s.recv(1024)
                 #s.close()
                 peer = PeerConnection(addr[0])
-                peer.send("INFO", "{name:'BitBot'}")
+                peer.send("PONG", json.dumps({'name': self.name}))
                 del peer
                 print(msg, addr)
 
@@ -65,6 +73,9 @@ class Peer:
         message_type, data = peer.receive()
         print(message_type + " : " + data)
 
+        if message_type == 'PONG':
+            self.add_peer(addr, data)
+
     def send_to_peer(self, peer_addr, message_type, data):
         p = PeerConnection(peer_addr)
         p.send(message_type, data)
@@ -76,7 +87,7 @@ class Peer:
 
 
 if __name__ == '__main__':
-    p = Peer()
+    p = Peer("BitBot")
     Thread(target=p.get_packet).start()
     Thread(target=p.receive_bcast).start()
     p.discover()

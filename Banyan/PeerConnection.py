@@ -13,6 +13,7 @@ logger = BanyanLogger.get_logger("Banyan.PeerConnection", stdout=True)
 
 class PeerConnection:
     def __init__(self, peer_addr, sock=None):
+        self.peer_addr = peer_addr
         logger.info("Connecting peer {}".format(peer_addr))
         if not sock:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

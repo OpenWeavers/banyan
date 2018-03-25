@@ -20,8 +20,9 @@ def get_host_ip():
 
 
 class Peer:
-    def __init__(self, name):
+    def __init__(self, name, bcast_ip):
         self.name = name
+        self.bcast_ip = bcast_ip
         logger.info('Initializing Banyan in your local network...')
         self.bcast_soc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.bcast_soc.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
@@ -40,6 +41,9 @@ class Peer:
         # self.bcast_recv_soc.bind(('', BCAST_RECV))
         logger.info("Started at " + get_host_ip() + ":" + str(CONN_PORT))
 
+    def add_handlers(self, message_type, handler):
+        self.handlers[message_type] = handler
+
     def add_peer(self, addr, data):
         if addr[0] not in self.peer_list.keys():
             json_data = json.loads(data)
@@ -47,7 +51,7 @@ class Peer:
             logger.info("Added {} to peer list".format(json_data['name']))
 
     def discover(self):
-        self.bcast_soc.sendto(b'PING', ('255.255.255.255', BCAST_PORT))
+        self.bcast_soc.sendto(b'PING', (self.bcast_ip, BCAST_PORT))
 
     def receive_bcast(self):
         while True:
@@ -74,14 +78,14 @@ class Peer:
             peer = PeerConnection(addr[0], sock=conn)
             message_type, data = peer.receive()
             print(message_type + " : " + data)
-            del peer
-            if message_type == 'PONG':
-                self.add_peer(addr, data)
+            #del peer
+            self.handlers[message_type](peer, data)
 
     def send_to_peer(self, peer_addr, message_type, data):
-        p = PeerConnection(peer_addr)
-        p.send(message_type, data)
-        reply = p.receive()
+        peer = PeerConnection(peer_addr)
+        peer.send(message_type, data)
+        reply = peer.receive()
+        return reply
 
     def __del__(self):
         self.bcast_soc.close()
@@ -89,7 +93,7 @@ class Peer:
 
 
 if __name__ == '__main__':
-    p = Peer("BitBot")
+    p = Peer("BitBot", "255.255.255.255")
     Thread(target=p.get_packet).start()
     Thread(target=p.receive_bcast).start()
     while True:

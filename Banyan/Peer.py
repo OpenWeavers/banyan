@@ -18,8 +18,8 @@ logger.addHandler(handler)
 
 
 CONN_PORT = 5000
-BCAST_PORT = 5001
-BCAST_RECV = 5002
+BCAST_PORT = 5000
+BCAST_RECV = 5000
 
 
 def get_host_ip():
@@ -32,26 +32,28 @@ class Peer:
         self.bcast_soc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.bcast_soc.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.bcast_soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.bcast_soc.bind(('', BCAST_PORT))
         self.conn_soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.conn_soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.conn_soc.bind(('', CONN_PORT))
         self.conn_soc.listen(5)
-        self.bcast_recv_soc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.bcast_recv_soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.bcast_recv_soc.bind(('', BCAST_RECV))
+        #self.bcast_recv_soc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        #self.bcast_recv_soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        #self.bcast_recv_soc.bind(('', BCAST_RECV))
         logger.info("Started at " + get_host_ip() + ":" + str(CONN_PORT))
 
     def discover(self):
-        self.bcast_soc.sendto(b'PING', ('255.255.255.255', BCAST_RECV))
+        self.bcast_soc.sendto(b'PING', ('255.255.255.255', BCAST_PORT))
+
 
     # Should handle case where broadcast by itself should not be catched!
     def recieve_bcast(self):
         while True:
-            msg, addr = self.bcast_recv_soc.recvfrom(1024)
+            msg, addr = self.bcast_soc.recvfrom(1024)
             if addr[0] != get_host_ip():
                 logger.info("Broadcast from " + addr[0])
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.connect((addr[0], 5000))
+                s.connect((addr[0], CONN_PORT))
                 s.sendall(b'PONG')
                 #data = s.recv(1024)
                 s.close()
@@ -61,6 +63,7 @@ class Peer:
         conn, addr = self.conn_soc.accept()
         print("Got message from {0} ".format(addr))
         msg = conn.recv(1024)
+        conn.close()
         print(msg)
 
     def __del__(self):

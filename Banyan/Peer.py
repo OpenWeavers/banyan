@@ -11,11 +11,12 @@ else:
     from Config import BCAST_PORT, CONN_PORT
     from PeerConnection import PeerConnection
 
-logger = BanyanLogger.get_logger(__name__, stdout=True)
+logger = BanyanLogger.get_logger("Banyan.Peer", stdout=True)
 
 
 def get_host_ip():
-    return [(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]
+    return [(s.connect(('8.8.8.8', 53)), s.getsockname()[0], s.close()) for s in
+            [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]
 
 
 class Peer:
@@ -34,9 +35,9 @@ class Peer:
         self.handlers = {}
         self.peer_list = {}
 
-        #self.bcast_recv_soc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        #self.bcast_recv_soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        #self.bcast_recv_soc.bind(('', BCAST_RECV))
+        # self.bcast_recv_soc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        # self.bcast_recv_soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # self.bcast_recv_soc.bind(('', BCAST_RECV))
         logger.info("Started at " + get_host_ip() + ":" + str(CONN_PORT))
 
     def add_peer(self, addr, data):
@@ -53,11 +54,11 @@ class Peer:
             msg, addr = self.bcast_soc.recvfrom(1024)
             if addr[0] != get_host_ip():
                 logger.info("Broadcast from " + addr[0])
-                #s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                #s.connect((addr[0], CONN_PORT))
-                #s.sendall(b'PONG')
-                #data = s.recv(1024)
-                #s.close()
+                # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                # s.connect((addr[0], CONN_PORT))
+                # s.sendall(b'PONG')
+                # data = s.recv(1024)
+                # s.close()
                 peer = PeerConnection(addr[0])
                 peer.send("PONG", json.dumps({'name': self.name}))
 
@@ -67,9 +68,9 @@ class Peer:
         while True:
             conn, addr = self.conn_soc.accept()
             print("Got message from {0} ".format(addr))
-            #msg = conn.recv(1024)
-            #conn.close()
-            #print(msg)
+            # msg = conn.recv(1024)
+            # conn.close()
+            # print(msg)
             peer = PeerConnection(addr[0], sock=conn)
             message_type, data = peer.receive()
             print(message_type + " : " + data)
@@ -94,4 +95,3 @@ if __name__ == '__main__':
     while True:
         s = input("discover again")
         p.discover()
-    del p

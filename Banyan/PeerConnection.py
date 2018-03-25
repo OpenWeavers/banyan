@@ -8,7 +8,7 @@ else:
     from Config import BANYAN_VERSION, CONN_PORT
     from BanyanLogger import BanyanLogger
 
-logger = BanyanLogger.get_logger(__name__, stdout=True)
+logger = BanyanLogger.get_logger("Banyan.PeerConnection", stdout=True)
 
 
 class PeerConnection:
@@ -22,6 +22,7 @@ class PeerConnection:
 
         logger.info("Connected peer {}".format(peer_addr))
         self.sock_file = self.sock.makefile("rwb", 0)
+        self.peer_addr = peer_addr
 
     def pack(self, message_type, data):
         data_len = len(data)
@@ -41,7 +42,7 @@ class PeerConnection:
         logger.info("Banyan version : " + str(banyan_version))
         if banyan_version == BANYAN_VERSION:
             message_type = self.sock_file.read(4)
-            logger.info(message_type.decode() + " recieved")
+            logger.info(message_type.decode() + " received from {0}:{1}".format(self.peer_addr, CONN_PORT))
             data_len = self.sock_file.read(4)
             data_len = int(struct.unpack("!L", data_len)[0])
             data = b''
@@ -57,8 +58,8 @@ class PeerConnection:
 
             return message_type.decode(), data.decode()
         else:
+            logger.warning("Invalid message received from {0}:{1}".format(self.peer_addr, CONN_PORT))
             return None, None
 
-
-def __del__(self):
-    self.sock_file.close()
+    def __del__(self):
+        self.sock_file.close()

@@ -2,13 +2,15 @@ import socket
 from threading import Thread
 
 if __name__ is not None and "." in __name__:
-    from .Logger import logger
+    from .BanyanLogger import BanyanLogger
     from .Config import BCAST_PORT, CONN_PORT
     from .PeerConnection import PeerConnection
 else:
-    from Logger import logger
+    from BanyanLogger import BanyanLogger
     from Config import BCAST_PORT, CONN_PORT
     from PeerConnection import PeerConnection
+
+logger = BanyanLogger.get_logger(__name__, stdout=True)
 
 
 def get_host_ip():
@@ -56,7 +58,7 @@ class Peer:
     def send_to_peer(self, peer_addr, message_type, data):
         p = PeerConnection(peer_addr)
         p.send(message_type, data)
-        reply = p.recieve()
+        reply = p.receive()
 
     def __del__(self):
         self.bcast_soc.close()

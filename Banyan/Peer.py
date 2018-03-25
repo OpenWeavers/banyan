@@ -60,21 +60,22 @@ class Peer:
                 #s.close()
                 peer = PeerConnection(addr[0])
                 peer.send("PONG", json.dumps({'name': self.name}))
-                del peer
+
                 print(msg, addr)
 
     def get_packet(self):
-        conn, addr = self.conn_soc.accept()
-        print("Got message from {0} ".format(addr))
-        #msg = conn.recv(1024)
-        #conn.close()
-        #print(msg)
-        peer = PeerConnection(addr[0], sock=conn)
-        message_type, data = peer.receive()
-        print(message_type + " : " + data)
-
-        if message_type == 'PONG':
-            self.add_peer(addr, data)
+        while True:
+            conn, addr = self.conn_soc.accept()
+            print("Got message from {0} ".format(addr))
+            #msg = conn.recv(1024)
+            #conn.close()
+            #print(msg)
+            peer = PeerConnection(addr[0], sock=conn)
+            message_type, data = peer.receive()
+            print(message_type + " : " + data)
+            del peer
+            if message_type == 'PONG':
+                self.add_peer(addr, data)
 
     def send_to_peer(self, peer_addr, message_type, data):
         p = PeerConnection(peer_addr)
@@ -90,5 +91,7 @@ if __name__ == '__main__':
     p = Peer("BitBot")
     Thread(target=p.get_packet).start()
     Thread(target=p.receive_bcast).start()
-    p.discover()
+    while True:
+        s = input("discover again")
+        p.discover()
     del p

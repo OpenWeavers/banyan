@@ -1,9 +1,14 @@
 import socket
 from threading import Thread
 
-from .Logger import logger
-from .Config import BCAST_PORT, CONN_PORT
-from .PeerConnection import PeerConnection
+if __name__ is not None and "." in __name__:
+    from .Logger import logger
+    from .Config import BCAST_PORT, CONN_PORT
+    from .PeerConnection import PeerConnection
+else:
+    from Logger import logger
+    from Config import BCAST_PORT, CONN_PORT
+    from PeerConnection import PeerConnection
 
 
 def get_host_ip():

@@ -1,8 +1,10 @@
 import socket
 import struct
 
-from .Config import BANYAN_VERSION, CONN_PORT
-
+if __name__ is not None and "." in __name__:
+    from .Config import BANYAN_VERSION, CONN_PORT
+else:
+    from Config import BANYAN_VERSION, CONN_PORT
 
 class PeerConnection:
     def __init__(self, peer_addr):

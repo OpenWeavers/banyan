@@ -9,7 +9,7 @@ else:
     from Peer import Peer
     from PeerConnection import PeerConnection
 
-INSERTPEER = "PONG"
+INSERTPEER = "INPR"
 QUERYFILELIST = "QFLL"
 REPLYFILELIST = "RFLL"
 GETFILE = "GETF"

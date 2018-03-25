@@ -1,28 +1,9 @@
 import socket
-import struct
 from threading import Thread
-import logging
 
-BANYAN_VERSION = 1
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-
-# create a file handler
-handler = logging.FileHandler('peer.log')
-handler.setLevel(logging.INFO)
-
-# create a logging format
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-
-# add the handlers to the logger
-logger.addHandler(handler)
-
-
-CONN_PORT = 5000
-BCAST_PORT = 5000
-BCAST_RECV = 5000
+from .Logger import logger
+from .Config import BCAST_PORT, CONN_PORT
+from .PeerConnection import PeerConnection
 
 
 def get_host_ip():
@@ -48,8 +29,6 @@ class Peer:
     def discover(self):
         self.bcast_soc.sendto(b'PING', ('255.255.255.255', BCAST_PORT))
 
-
-    # Should handle case where broadcast by itself should not be catched!
     def recieve_bcast(self):
         while True:
             msg, addr = self.bcast_soc.recvfrom(1024)
@@ -77,26 +56,6 @@ class Peer:
     def __del__(self):
         self.bcast_soc.close()
         self.conn_soc.close()
-
-
-class PeerConnection:
-    def __init__(self, peer_addr):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect((peer_addr, CONN_PORT))
-        self.sock_file = self.sock.makefile("rw", 0)
-
-    def pack(self, message_type, data):
-        data_len = len(data)
-        stuff = struct.pack("!I4sL{0}s".format(data_len), BANYAN_VERSION, message_type, data_len, data)
-        return stuff
-
-    def send(self, message_type, data):
-        stuff = self.pack(message_type, data)
-        self.sock_file.write(stuff)
-        self.sock_file.flush()
-
-    def __del__(self):
-        self.sock_file.close()
 
 
 if __name__ == '__main__':

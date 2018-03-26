@@ -88,6 +88,8 @@ class Peer:
 
     def send_to_peer(self, peer_addr:str, message_type:str, data:str):
         peer = PeerConnection(peer_addr)
+        if message_type == "GETF":
+            peer.temp_info = data
         peer.send(message_type, data)
         received_message_type, reply = peer.receive()
         self.handlers[received_message_type](peer, reply)

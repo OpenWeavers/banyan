@@ -84,12 +84,11 @@ class Banyan:
         self.files_available[peer_conn.peer_addr] = file_list
 
     def handle_get_file(self, peer_conn:PeerConnection, filename:str):
-        #if filename not in self.get_local_files():
-        #    peer_conn.send(ERROR, "{} not found".format(filename))
-        #    return
-        print(filename)
-        ll = [ele[0] for ele in self.get_local_files()]
-        print(ll)
+        local_files = [ele[0] for ele in self.get_local_files()]
+        if filename not in local_files:
+            peer_conn.send(ERROR, "{} not found".format(filename))
+            return
+
         fd = open(self.watch_directory / filename, 'rb')
         data = fd.read()
         # while True:
@@ -107,11 +106,13 @@ class Banyan:
     def handle_error(self,peer_conn:PeerConnection,data:str):
         logger.error("Error from {0} : {1}".format(peer_conn.peer_addr,data))
 
-    def handle_reply(self,peer_conn:PeerConnection, data:str):
+    def handle_reply(self,peer_conn:PeerConnection, data: bytes):
         #content = pickle.loads(data)
         content = data
-        logger.info("Recieved File {0} from {1}".format("somefile",peer_conn.peer_addr))
-        with open(self.download_directory / "file.nn",'wb') as f:
+        filename = peer_conn.temp_info
+        logger.info("Recieved File {0} from {1}".format(filename,peer_conn.peer_addr))
+
+        with open(self.download_directory / filename, 'wb') as f:
             f.write(data)
 
     def check_life(self, peer_addr:str):
@@ -147,6 +148,6 @@ if __name__ == '__main__':
             app.peer.send_to_peer(peer, QUERYFILELIST, '')
         print(app.files_available)
         print(app.peer.peer_list)
-        app.peer.send_to_peer('192.168.0.104', GETFILE, "test.mp4")
+        app.peer.send_to_peer('192.168.0.104', GETFILE, "twenty.mp4")
 
 

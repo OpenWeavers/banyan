@@ -24,6 +24,7 @@ class PeerConnection:
         logger.info("Connected peer {}".format(peer_addr))
         self.sock_file = self.sock.makefile("rwb", 0)
         self.peer_addr = peer_addr
+        self.temp_info = ''
 
     def pack(self, message_type:str, data:str):
         data_len = len(data)

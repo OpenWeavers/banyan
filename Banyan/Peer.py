@@ -92,7 +92,7 @@ class Peer:
     def send_to_peer(self, peer_addr:str, message_type:str, data:str):
         peer = PeerConnection(peer_addr)
         peer.send(message_type, data)
-        reply = peer.receive()
+        received_message_type,reply = peer.receive()
         return reply
 
     def __del__(self):

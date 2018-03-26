@@ -55,7 +55,7 @@ class Banyan:
 
     def get_local_files(self):
         if Path.is_dir(self.watch_directory):
-            self.local_files = [(child, Path(child).stat().st_size) for child in Path(self.watch_directory).iterdir() if Path.is_file(child)]
+            self.local_files = [(str(child), Path(child).stat().st_size) for child in Path(self.watch_directory).iterdir() if Path.is_file(child)]
             return self.local_files
 
     def handle_insert_peer(self, peer_conn:PeerConnection, data:str):
@@ -133,9 +133,9 @@ if __name__ == '__main__':
         files = app.get_local_files()
         print(files)
         print(app.peer.peer_list)
-        #for peer in app.peer.get_peer_list():
-         #  app.peer.send_to_peer(peer, QUERYFILELIST, '')
-
-        #print(app.files_available)
+        print(app.files_available)
+        for peer in app.peer.get_peer_list():
+            app.peer.send_to_peer(peer, QUERYFILELIST, '')
+        print(app.files_available)
 
 

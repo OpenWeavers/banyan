@@ -86,7 +86,9 @@ class Banyan:
     def handle_get_file(self, peer_conn:PeerConnection, filename:str):
         if filename not in self.get_local_files():
             peer_conn.send(ERROR, "{} not found".format(filename))
-        fd = open(filename, 'r')
+            return
+
+        fd = open(filename, 'rb')
         data = fd.read()
         # while True:
         #    segment = fd.read(2048)
@@ -94,7 +96,7 @@ class Banyan:
         #        break
         #    data += segment
         fd.close()
-        peer_conn.send(REPLY, json.dumps({'filename':filename,'data':data}))
+        peer_conn.send(REPLY, data)
 
     def handle_ping(self, peer_conn:PeerConnection, data:str = None):
         logger.info('Received Ping from {0}'.format(peer_conn.peer_addr))

@@ -27,7 +27,8 @@ class PeerConnection:
 
     def pack(self, message_type:str, data:str):
         data_len = len(data)
-        bytes_data = str.encode(data)
+        if message_type != "REPL":
+            bytes_data = str.encode(data)
         bytes_message_type = str.encode(message_type)
         stuff = struct.pack("!I4sL{0}s".format(data_len), BANYAN_VERSION, bytes_message_type, data_len, bytes_data)
         return stuff

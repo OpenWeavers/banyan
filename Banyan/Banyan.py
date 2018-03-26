@@ -56,7 +56,7 @@ class Banyan:
 
     def get_local_files(self):
         if Path.is_dir(self.watch_directory):
-            self.local_files = [(str(child), Path(child).stat().st_size) for child in Path(self.watch_directory).iterdir() if Path.is_file(child)]
+            self.local_files = [(child.name, Path(child).stat().st_size) for child in Path(self.watch_directory).iterdir() if Path.is_file(child)]
             return self.local_files
 
     def handle_insert_peer(self, peer_conn:PeerConnection, data:str):
@@ -78,7 +78,7 @@ class Banyan:
         peer_conn.send(REPLYFILELIST, json.dumps(file_list))
 
     def handle_reply_file_list(self, peer_conn:PeerConnection, data:str):
-        print("Entered Handle")
+        #print("Entered Handle")
         file_list = json.loads(data)
         print("Data", data)
         self.files_available[peer_conn.peer_addr] = file_list
@@ -106,10 +106,11 @@ class Banyan:
         logger.error("Error from {0} : {1}".format(peer_conn.peer_addr,data))
 
     def handle_reply(self,peer_conn:PeerConnection, data:str):
-        content = pickle.loads(data)
-        logger.info("Recieved File {0} from {1}".format(content['filename'],peer_conn.peer_addr))
-        with open(self.download_directory / content['filename'],'wb') as f:
-            f.write(content['data'])
+        #content = pickle.loads(data)
+        content = data
+        logger.info("Recieved File {0} from {1}".format("somefile",peer_conn.peer_addr))
+        with open(self.download_directory / "file.nn",'wb') as f:
+            f.write(data)
 
     def check_life(self, peer_addr:str):
         """
@@ -144,6 +145,6 @@ if __name__ == '__main__':
             app.peer.send_to_peer(peer, QUERYFILELIST, '')
         print(app.files_available)
         print(app.peer.peer_list)
-        app.peer.send_to_peer('192.168.43.21', GETFILE, "test.mp4")
+        app.peer.send_to_peer('192.168.0.104', GETFILE, "test.mp4")
 
 

@@ -29,6 +29,8 @@ class PeerConnection:
         data_len = len(data)
         if message_type != "REPL":
             bytes_data = str.encode(data)
+        else:
+            bytes_data = data
         bytes_message_type = str.encode(message_type)
         stuff = struct.pack("!I4sL{0}s".format(data_len), BANYAN_VERSION, bytes_message_type, data_len, bytes_data)
         return stuff
@@ -47,7 +49,7 @@ class PeerConnection:
             logger.info(message_type.decode() + " received from {0}:{1}".format(self.peer_addr, CONN_PORT))
             data_len = self.sock_file.read(4)
             data_len = int(struct.unpack("!L", data_len)[0])
-            print(data_len)
+            #print(data_len)
             data = b''
 
             while len(data) != data_len:
@@ -58,7 +60,8 @@ class PeerConnection:
             if len(data) != data_len:
                 return None, None
             message_type = message_type.decode()
-            data = data.decode()
+            if message_type != "REPL":
+                data = data.decode()
             return message_type, data
         else:
             logger.warning("Invalid message received from {0}:{1}".format(self.peer_addr, CONN_PORT))

@@ -84,11 +84,13 @@ class Banyan:
         self.files_available[peer_conn.peer_addr] = file_list
 
     def handle_get_file(self, peer_conn:PeerConnection, filename:str):
-        if filename not in self.get_local_files():
-            peer_conn.send(ERROR, "{} not found".format(filename))
-            return
-
-        fd = open(filename, 'rb')
+        #if filename not in self.get_local_files():
+        #    peer_conn.send(ERROR, "{} not found".format(filename))
+        #    return
+        print(filename)
+        ll = [ele[0] for ele in self.get_local_files()]
+        print(ll)
+        fd = open(self.watch_directory / filename, 'rb')
         data = fd.read()
         # while True:
         #    segment = fd.read(2048)

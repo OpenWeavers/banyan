@@ -12,7 +12,7 @@ logger = BanyanLogger.get_logger("Banyan.PeerConnection", stdout=True)
 
 
 class PeerConnection:
-    def __init__(self, peer_addr, sock=None):
+    def __init__(self, peer_addr:str, sock:socket.socket=None):
         self.peer_addr = peer_addr
         logger.info("Connecting peer {}".format(peer_addr))
         if not sock:
@@ -25,14 +25,14 @@ class PeerConnection:
         self.sock_file = self.sock.makefile("rwb", 0)
         self.peer_addr = peer_addr
 
-    def pack(self, message_type, data):
+    def pack(self, message_type:str, data:str):
         data_len = len(data)
         bytes_data = str.encode(data)
         bytes_message_type = str.encode(message_type)
         stuff = struct.pack("!I4sL{0}s".format(data_len), BANYAN_VERSION, bytes_message_type, data_len, bytes_data)
         return stuff
 
-    def send(self, message_type, data):
+    def send(self, message_type:str, data:str):
         stuff = self.pack(message_type, data)
         self.sock_file.write(stuff)
         self.sock_file.flush()

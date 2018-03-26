@@ -20,7 +20,7 @@ def get_host_ip():
 
 
 class Peer:
-    def __init__(self, name, bcast_ip):
+    def __init__(self, name:str, bcast_ip:str):
         self.name = name
         self.bcast_ip = bcast_ip
         logger.info('Initializing Banyan in your local network...')
@@ -41,11 +41,17 @@ class Peer:
         # self.bcast_recv_soc.bind(('', BCAST_RECV))
         logger.info("Started at " + get_host_ip() + ":" + str(CONN_PORT))
 
-    def add_handlers(self, message_type, handler):
+    def add_handlers(self, message_type:str, handler):
         self.handlers[message_type] = handler
 
-    def add_peer(self, addr, data):
-        if addr[0] not in self.peer_list.keys():
+    def add_peer(self, addr:str, data:str):
+        """
+        Adds a peer to internal dictionary
+        :param addr: IP adress of the peer
+        :param data: Short name of the peer
+        :return: Nothing
+        """
+        if addr not in self.peer_list.keys():
             json_data = json.loads(data)
             self.peer_list[addr] = json_data['name']
             logger.info("Added {} to peer list".format(json_data['name']))
@@ -60,7 +66,7 @@ class Peer:
         while True:
             msg, addr = self.bcast_soc.recvfrom(1024)
             if addr[0] != get_host_ip():
-                logger.info("Broadcast from " + addr[0])
+                logger.info("Broadcast from " + addr[0] + "Message :" + msg)
                 # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 # s.connect((addr[0], CONN_PORT))
                 # s.sendall(b'PONG')
@@ -69,22 +75,22 @@ class Peer:
                 peer = PeerConnection(addr[0])
                 peer.send("PONG", json.dumps({'name': self.name}))
 
-                print(msg, addr)
-
-    def get_packet(self):
+    def peer_listen(self):
         while True:
             conn, addr = self.conn_soc.accept()
-            print("Got message from {0} ".format(addr))
+            # print("Got message from {0} ".format(addr))
             # msg = conn.recv(1024)
             # conn.close()
             # print(msg)
             peer = PeerConnection(addr[0], sock=conn)
             message_type, data = peer.receive()
-            print(message_type + " : " + data)
-            #del peer
+            logger.info("Recieved {0} message from {1}:{2} Data: {3}".format(message_type,*addr,data))
+            # print(message_type + " : " + data)
+            # del peer
+            # Execute the associated Handler
             self.handlers[message_type](peer, data)
 
-    def send_to_peer(self, peer_addr, message_type, data):
+    def send_to_peer(self, peer_addr:str, message_type:str, data:str):
         peer = PeerConnection(peer_addr)
         peer.send(message_type, data)
         reply = peer.receive()
@@ -95,6 +101,7 @@ class Peer:
         self.conn_soc.close()
 
 
+'''
 if __name__ == '__main__':
     p = Peer("BitBot", "255.255.255.255")
     Thread(target=p.get_packet).start()
@@ -102,3 +109,4 @@ if __name__ == '__main__':
     while True:
         s = input("discover again")
         p.discover()
+'''

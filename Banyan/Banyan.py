@@ -1,3 +1,4 @@
+import pickle
 import json
 from pathlib import Path
 from threading import Thread
@@ -102,10 +103,10 @@ class Banyan:
     def handle_error(self,peer_conn:PeerConnection,data:str):
         logger.error("Error from {0} : {1}".format(peer_conn.peer_addr,data))
 
-    def handle_reply(self,peer_conn:PeerConnection,data:str):
-        content = json.loads(data)
+    def handle_reply(self,peer_conn:PeerConnection, data:str):
+        content = pickle.loads(data)
         logger.info("Recieved File {0} from {1}".format(content['filename'],peer_conn.peer_addr))
-        with open(self.download_directory / content['filename'],'w') as f:
+        with open(self.download_directory / content['filename'],'wb') as f:
             f.write(content['data'])
 
     def check_life(self, peer_addr:str):
@@ -141,6 +142,6 @@ if __name__ == '__main__':
             app.peer.send_to_peer(peer, QUERYFILELIST, '')
         print(app.files_available)
         print(app.peer.peer_list)
-        app.peer.send_to_peer(str(list(app.peer.peer_list.keys())[0]), GETFILE, app.files_available[str(list(app.peer.peer_list.keys()))[0]][0])
+        app.peer.send_to_peer('192.168.43.21', GETFILE, "test.mp4")
 
 

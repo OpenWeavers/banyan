@@ -21,8 +21,8 @@ ERROR = "ERRR"
 
 
 class Banyan:
-    def __init__(self, max_peers, bcast_ip="255.255.255.255"):
-        self.peer = Peer("BitBot", bcast_ip)
+    def __init__(self, max_peers, name, bcast_ip="255.255.255.255"):
+        self.peer = Peer(name, bcast_ip)
         self.max_peers = max_peers
         Thread(target=self.peer.get_packet).start()
         Thread(target=self.peer.receive_bcast).start()
@@ -39,6 +39,7 @@ class Banyan:
 
         self.files_available = {}
         self.local_files = []
+        self.no_of_peers = 0
 
         self.home_path = Path.home()
         #if Path.is_dir(self.home_path / 'BanyanWatchDirectory'):
@@ -50,20 +51,21 @@ class Banyan:
             self.local_files = [(child, Path(child).stat().st_size) for child in Path(self.watch_directory).iterdir() if Path.is_file(child)]
             return self.local_files
 
-    def handle_insert_peer(self, peer_conn):
+    def handle_insert_peer(self, peer_conn, data):
         if self.no_of_peers >= self.max_peers:
             return False
 
-        self.peer.add_peer(peer_conn.peer_addr)
+        self.peer.add_peer(peer_conn.peer_addr, data)
+        self.no_of_peers += 1
         return True
 
-    def handle_query_file_list(self, peer_conn):
+    def handle_query_file_list(self, peer_conn, data):
         files = self.get_local_files()
         peer_conn.send(REPLYFILELIST, json.dumps(files))
 
     def handle_reply_file_list(self, peer_conn, data):
         files = json.loads(data)
-        self.files_available[peer_conn.peer_addr]  = [file for file in files]
+        self.files_available[peer_conn.peer_addr] = [file for file in files]
 
     def handle_get_file(self, peer_conn, filename):
         if filename not in self.get_local_files():
@@ -80,7 +82,7 @@ class Banyan:
 
         peer_conn.send(REPLY, data)
 
-    def handle_ping(self, peer_conn):
+    def handle_ping(self, peer_conn, data):
         peer_conn.send(PONG, '')
 
     def check_life(self, peer_conn):
@@ -96,4 +98,8 @@ class Banyan:
 
 
 if __name__ == '__main__':
-    app = Banyan(5)
+    app = Banyan(5, "BitBot")
+    while True:
+        app.update_peers()
+        input("again")
+

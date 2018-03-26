@@ -47,8 +47,11 @@ class Peer:
     def add_peer(self, addr, data):
         if addr[0] not in self.peer_list.keys():
             json_data = json.loads(data)
-            self.peer_list[addr[0]] = json_data['name']
+            self.peer_list[addr] = json_data['name']
             logger.info("Added {} to peer list".format(json_data['name']))
+
+    def get_peer_list(self):
+        return self.peer_list
 
     def discover(self):
         self.bcast_soc.sendto(b'PING', (self.bcast_ip, BCAST_PORT))

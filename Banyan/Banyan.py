@@ -9,7 +9,7 @@ else:
     from Peer import Peer
     from PeerConnection import PeerConnection
 
-INSERTPEER = "INPR"
+INSERTPEER = "PONG"
 QUERYFILELIST = "QFLL"
 REPLYFILELIST = "RFLL"
 GETFILE = "GETF"
@@ -102,4 +102,7 @@ if __name__ == '__main__':
     while True:
         app.update_peers()
         input("again")
+        files = app.get_local_files()
+        print(files)
+        print(app.peer.peer_list)
 

@@ -52,9 +52,8 @@ class Peer:
         :return: Nothing
         """
         if addr not in self.peer_list.keys():
-            json_data = json.loads(data)
-            self.peer_list[addr] = json_data['name']
-            logger.info("Added {} to peer list".format(json_data['name']))
+            self.peer_list[addr] = data
+            logger.info("Added {} to peer list".format(data))
 
     def get_peer_list(self):
         return self.peer_list
@@ -66,7 +65,7 @@ class Peer:
         while True:
             msg, addr = self.bcast_soc.recvfrom(1024)
             if addr[0] != get_host_ip():
-                logger.info("Broadcast from " + addr[0] + "Message :" + msg)
+                logger.info("Broadcast from " + addr[0] + "Message :" + msg.decode())
                 # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 # s.connect((addr[0], CONN_PORT))
                 # s.sendall(b'PONG')

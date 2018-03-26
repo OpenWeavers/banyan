@@ -75,25 +75,24 @@ class Peer:
                 peer.send("PONG", json.dumps({'name': self.name}))
 
     def peer_listen(self):
+
         while True:
             conn, addr = self.conn_soc.accept()
-            # print("Got message from {0} ".format(addr))
-            # msg = conn.recv(1024)
-            # conn.close()
-            # print(msg)
             peer = PeerConnection(addr[0], sock=conn)
-            message_type, data = peer.receive()
-            logger.info("Recieved {0} message from {1}:{2} Data: {3}".format(message_type,*addr,data))
-            # print(message_type + " : " + data)
+            (message_type, data_1) = peer.receive()
+            logger.info("Recieved {0} message from {1}:{2} Data: {3}".format(message_type,*addr,data_1))
+            print(message_type + " : " + data_1)
             # del peer
-            # Execute the associated Handler
-            self.handlers[message_type](peer, data)
+            # Execute the associated Handle
+            self.handlers[message_type](peer, data_1)
 
     def send_to_peer(self, peer_addr:str, message_type:str, data:str):
         peer = PeerConnection(peer_addr)
         peer.send(message_type, data)
-        received_message_type,reply = peer.receive()
-        return reply
+        received_message_type, reply = peer.receive()
+        self.handlers[received_message_type](peer, reply)
+        #print(reply)
+        #return received_message_type, reply
 
     def __del__(self):
         self.bcast_soc.close()

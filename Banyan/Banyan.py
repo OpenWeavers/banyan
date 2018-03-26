@@ -77,7 +77,9 @@ class Banyan:
         peer_conn.send(REPLYFILELIST, json.dumps(file_list))
 
     def handle_reply_file_list(self, peer_conn:PeerConnection, data:str):
+        print("Entered Handle")
         file_list = json.loads(data)
+        print("Data", data)
         self.files_available[peer_conn.peer_addr] = file_list
 
     def handle_get_file(self, peer_conn:PeerConnection, filename:str):
@@ -127,8 +129,9 @@ class Banyan:
 
 if __name__ == '__main__':
     app = Banyan(5, "BitBot")
+    app.update_peers()
     while True:
-        app.update_peers()
+        # app.update_peers()
         input("again")
         files = app.get_local_files()
         print(files)
@@ -137,5 +140,7 @@ if __name__ == '__main__':
         for peer in app.peer.get_peer_list():
             app.peer.send_to_peer(peer, QUERYFILELIST, '')
         print(app.files_available)
+        print(app.peer.peer_list)
+        app.peer.send_to_peer(str(list(app.peer.peer_list.keys())[0]), GETFILE, app.files_available[str(list(app.peer.peer_list.keys()))[0]][0])
 
 

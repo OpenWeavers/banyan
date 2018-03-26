@@ -5,9 +5,11 @@ from threading import Thread
 if __name__ is not None and "." in __name__:
     from .Peer import Peer
     from .PeerConnection import PeerConnection
+    from .BanyanLogger import BanyanLogger
 else:
     from Peer import Peer
     from PeerConnection import PeerConnection
+    from BanyanLogger import BanyanLogger
 
 INSERTPEER = "PONG"
 QUERYFILELIST = "QFLL"
@@ -19,19 +21,22 @@ PONG = "PONG"
 REPLY = "REPL"
 ERROR = "ERRR"
 
+logger = BanyanLogger.get_logger("Banyan")
 
 class Banyan:
-    def __init__(self, max_peers, name, bcast_ip="255.255.255.255"):
+    def __init__(self, max_peers:int, name:str, bcast_ip:str="255.255.255.255"):
         self.peer = Peer(name, bcast_ip)
         self.max_peers = max_peers
-        Thread(target=self.peer.get_packet).start()
+        Thread(target=self.peer.peer_listen).start()
         Thread(target=self.peer.receive_bcast).start()
         self.handlers = {
-            INSERTPEER: self.handle_insert_peer,
+            PONG: self.handle_insert_peer,
             QUERYFILELIST: self.handle_query_file_list,
             REPLYFILELIST: self.handle_reply_file_list,
             GETFILE: self.handle_get_file,
-            PING: self.handle_ping
+            PING: self.handle_ping,
+            ERROR: self.handle_error,
+            REPLY: self.handle_reply
         }
 
         for message_type in self.handlers:
@@ -43,54 +48,77 @@ class Banyan:
 
         self.home_path = Path.home()
         #if Path.is_dir(self.home_path / 'BanyanWatchDirectory'):
-        Path.mkdir(self.home_path / 'BanyanWatchDirectory', exist_ok=True)
         self.watch_directory = self.home_path / 'BanyanWatchDirectory'
+        self.download_directory = self.home_path / 'BanyanDownloads'
+        Path.mkdir(self.watch_directory, exist_ok=True)
+        Path.mkdir(self.download_directory, exist_ok=True)
 
     def get_local_files(self):
         if Path.is_dir(self.watch_directory):
             self.local_files = [(child, Path(child).stat().st_size) for child in Path(self.watch_directory).iterdir() if Path.is_file(child)]
             return self.local_files
 
-    def handle_insert_peer(self, peer_conn, data):
+    def handle_insert_peer(self, peer_conn:PeerConnection, data:str):
+        """
+        Handler to Insert Peer
+        :param peer_conn: Recieved connection from another Peer
+        :param data: Name of another Peer
+        :return: Success Value
+        """
         if self.no_of_peers >= self.max_peers:
             return False
-
-        self.peer.add_peer(peer_conn.peer_addr, data)
+        peer_name = json.loads(data)['name']
+        self.peer.add_peer(peer_conn.peer_addr, peer_name)
         self.no_of_peers += 1
         return True
 
-    def handle_query_file_list(self, peer_conn, data):
-        files = self.get_local_files()
-        peer_conn.send(REPLYFILELIST, json.dumps(files))
+    def handle_query_file_list(self, peer_conn:PeerConnection, data:str = None):
+        file_list = self.get_local_files()
+        peer_conn.send(REPLYFILELIST, json.dumps(file_list))
 
-    def handle_reply_file_list(self, peer_conn, data):
-        files = json.loads(data)
-        self.files_available[peer_conn.peer_addr] = [file for file in files]
+    def handle_reply_file_list(self, peer_conn:PeerConnection, data:str):
+        file_list = json.loads(data)
+        self.files_available[peer_conn.peer_addr] = file_list
 
-    def handle_get_file(self, peer_conn, filename):
+    def handle_get_file(self, peer_conn:PeerConnection, filename:str):
         if filename not in self.get_local_files():
             peer_conn.send(ERROR, "{} not found".format(filename))
-
         fd = open(filename, 'r')
-        data = ''
-        while True:
-            segment = fd.read(2048)
-            if not len(segment):
-                break
-            data += segment
+        data = fd.read()
+        # while True:
+        #    segment = fd.read(2048)
+        #    if not len(segment):
+        #        break
+        #    data += segment
         fd.close()
+        peer_conn.send(REPLY, json.dumps({'filename':filename,'data':data}))
 
-        peer_conn.send(REPLY, data)
-
-    def handle_ping(self, peer_conn, data):
+    def handle_ping(self, peer_conn:PeerConnection, data:str = None):
+        logger.info('Received Ping from {0}'.format(peer_conn.peer_addr))
         peer_conn.send(PONG, '')
 
-    def check_life(self, peer_conn):
+    def handle_error(self,peer_conn:PeerConnection,data:str):
+        logger.error("Error from {0} : {1}".format(peer_conn.peer_addr,data))
+
+    def handle_reply(self,peer_conn:PeerConnection,data:str):
+        content = json.loads(data)
+        logger.info("Recieved File {0} from {1}".format(content['filename'],peer_conn.peer_addr))
+        with open(self.download_directory / content['filename'],'w') as f:
+            f.write(content['data'])
+
+    def check_life(self, peer_addr:str):
+        """
+        Checks whether a peer is alive or not
+        :param peer_addr: IP address of peer
+        :return: True if peer is alive else False
+        """
+        peer_conn = PeerConnection(peer_addr)
         peer_conn.send(PING, '')
         message_type, data = peer_conn.receive()
-        if message_type == 'PONG':
+        if message_type == PONG:
             return True
         del self.peer.peer_list[peer_conn.peer_addr]
+        self.no_of_peers -= 1
         return False
 
     def update_peers(self):
@@ -105,4 +133,9 @@ if __name__ == '__main__':
         files = app.get_local_files()
         print(files)
         print(app.peer.peer_list)
+        #for peer in app.peer.get_peer_list():
+         #  app.peer.send_to_peer(peer, QUERYFILELIST, '')
+
+        #print(app.files_available)
+
 

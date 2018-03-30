@@ -14,14 +14,14 @@ logger = BanyanLogger.get_logger("Banyan.PeerConnection", stdout=True)
 class PeerConnection:
     def __init__(self, peer_addr:str, sock:socket.socket=None):
         self.peer_addr = peer_addr
-        logger.info("Connecting peer {}".format(peer_addr))
+        logger.debug("Connecting peer {}".format(peer_addr))
         if not sock:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect((peer_addr, CONN_PORT))
         else:
             self.sock = sock
 
-        logger.info("Connected peer {}".format(peer_addr))
+        logger.debug("Connected peer {}".format(peer_addr))
         self.sock_file = self.sock.makefile("rwb", 0)
         self.peer_addr = peer_addr
         self.temp_info = ''
@@ -44,10 +44,10 @@ class PeerConnection:
     def receive(self):
         banyan_version = self.sock_file.read(4)
         banyan_version = int(struct.unpack("!I", banyan_version)[0])
-        logger.info("Banyan version : " + str(banyan_version))
+        logger.debug("Banyan version : " + str(banyan_version))
         if banyan_version == BANYAN_VERSION:
             message_type = self.sock_file.read(4)
-            logger.info(message_type.decode() + " received from {0}:{1}".format(self.peer_addr, CONN_PORT))
+            logger.debug(message_type.decode() + " received from {0}:{1}".format(self.peer_addr, CONN_PORT))
             data_len = self.sock_file.read(4)
             data_len = int(struct.unpack("!L", data_len)[0])
             #print(data_len)

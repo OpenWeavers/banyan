@@ -65,7 +65,7 @@ class Peer:
         while True:
             msg, addr = self.bcast_soc.recvfrom(1024)
             if addr[0] != get_host_ip():
-                logger.info("Broadcast from " + addr[0] + "Message :" + msg.decode())
+                logger.debug("Broadcast from " + addr[0] + "Message :" + msg.decode())
                 # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 # s.connect((addr[0], CONN_PORT))
                 # s.sendall(b'PONG')
@@ -80,8 +80,8 @@ class Peer:
             conn, addr = self.conn_soc.accept()
             peer = PeerConnection(addr[0], sock=conn)
             (message_type, data_1) = peer.receive()
-            logger.info("Recieved {0} message from {1}:{2} Data: {3}".format(message_type,*addr,data_1))
-            print(message_type + " : " + data_1)
+            logger.debug("Recieved {0} message from {1}:{2} Data: {3}".format(message_type,*addr,data_1))
+            # print(message_type + " : " + data_1)
             # del peer
             # Execute the associated Handle
             self.handlers[message_type](peer, data_1)

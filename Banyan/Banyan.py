@@ -22,10 +22,11 @@ PONG = "PONG"
 REPLY = "REPL"
 ERROR = "ERRR"
 
-logger = BanyanLogger.get_logger("Banyan")
+logger = BanyanLogger.get_logger("Banyan",stdout=True)
+
 
 class Banyan:
-    def __init__(self, max_peers:int, name:str, bcast_ip:str="255.255.255.255"):
+    def __init__(self, max_peers: int, name: str, bcast_ip: str = "255.255.255.255"):
         self.peer = Peer(name, bcast_ip)
         self.max_peers = max_peers
         Thread(target=self.peer.peer_listen).start()
@@ -48,7 +49,7 @@ class Banyan:
         self.no_of_peers = 0
 
         self.home_path = Path.home()
-        #if Path.is_dir(self.home_path / 'BanyanWatchDirectory'):
+        # if Path.is_dir(self.home_path / 'BanyanWatchDirectory'):
         self.watch_directory = self.home_path / 'BanyanWatchDirectory'
         self.download_directory = self.home_path / 'BanyanDownloads'
         Path.mkdir(self.watch_directory, exist_ok=True)
@@ -56,10 +57,11 @@ class Banyan:
 
     def get_local_files(self):
         if Path.is_dir(self.watch_directory):
-            self.local_files = [(child.name, Path(child).stat().st_size) for child in Path(self.watch_directory).iterdir() if Path.is_file(child)]
+            self.local_files = [(child.name, Path(child).stat().st_size) for child in
+                                Path(self.watch_directory).iterdir() if Path.is_file(child)]
             return self.local_files
 
-    def handle_insert_peer(self, peer_conn:PeerConnection, data:str):
+    def handle_insert_peer(self, peer_conn: PeerConnection, data: str):
         """
         Handler to Insert Peer
         :param peer_conn: Recieved connection from another Peer
@@ -73,17 +75,17 @@ class Banyan:
         self.no_of_peers += 1
         return True
 
-    def handle_query_file_list(self, peer_conn:PeerConnection, data:str = None):
+    def handle_query_file_list(self, peer_conn: PeerConnection, data: str = None):
         file_list = self.get_local_files()
         peer_conn.send(REPLYFILELIST, json.dumps(file_list))
 
-    def handle_reply_file_list(self, peer_conn:PeerConnection, data:str):
-        #print("Entered Handle")
+    def handle_reply_file_list(self, peer_conn: PeerConnection, data: str):
+        # print("Entered Handle")
         file_list = json.loads(data)
         print("Data", data)
         self.files_available[peer_conn.peer_addr] = file_list
 
-    def handle_get_file(self, peer_conn:PeerConnection, filename:str):
+    def handle_get_file(self, peer_conn: PeerConnection, filename: str):
         local_files = [ele[0] for ele in self.get_local_files()]
         if filename not in local_files:
             peer_conn.send(ERROR, "{} not found".format(filename))
@@ -99,23 +101,23 @@ class Banyan:
         fd.close()
         peer_conn.send(REPLY, data)
 
-    def handle_ping(self, peer_conn:PeerConnection, data:str = None):
-        logger.info('Received Ping from {0}'.format(peer_conn.peer_addr))
+    def handle_ping(self, peer_conn: PeerConnection, data: str = None):
+        logger.debug('Received Ping from {0}'.format(peer_conn.peer_addr))
         peer_conn.send(PONG, '')
 
-    def handle_error(self,peer_conn:PeerConnection,data:str):
-        logger.error("Error from {0} : {1}".format(peer_conn.peer_addr,data))
+    def handle_error(self, peer_conn: PeerConnection, data: str):
+        logger.debug("Error from {0} : {1}".format(peer_conn.peer_addr, data))
 
-    def handle_reply(self,peer_conn:PeerConnection, data: bytes):
-        #content = pickle.loads(data)
+    def handle_reply(self, peer_conn: PeerConnection, data: bytes):
+        # content = pickle.loads(data)
         content = data
         filename = peer_conn.temp_info
-        logger.info("Recieved File {0} from {1}".format(filename,peer_conn.peer_addr))
+        logger.debug("Recieved File {0} from {1}".format(filename, peer_conn.peer_addr))
 
         with open(self.download_directory / filename, 'wb') as f:
             f.write(data)
 
-    def check_life(self, peer_addr:str):
+    def check_life(self, peer_addr: str):
         """
         Checks whether a peer is alive or not
         :param peer_addr: IP address of peer
@@ -133,6 +135,9 @@ class Banyan:
     def update_peers(self):
         self.peer.discover()
 
+    def __del__(self):
+        del self.peer
+
 
 if __name__ == '__main__':
     app = Banyan(5, "BitBot")
@@ -149,5 +154,3 @@ if __name__ == '__main__':
         print(app.files_available)
         print(app.peer.peer_list)
         app.peer.send_to_peer('192.168.0.104', GETFILE, "twenty.mp4")
-
-

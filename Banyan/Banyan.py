@@ -134,7 +134,7 @@ class Banyan:
 
     def update_peers(self):
         self.peer.peer_list = {}
-        self.no_of_peer = 0
+        self.no_of_peers = 0
         self.peer.discover()
 
     def __del__(self):

@@ -1,25 +1,24 @@
 import cmd
-import readline
-import sys
+from pathlib import Path
 
 if __name__ is not None and "." in __name__:
-    from .Banyan import Banyan, QUERYFILELIST
+    from .Banyan import Banyan, QUERYFILELIST, GETFILE
 else:
-    from Banyan import Banyan, QUERYFILELIST
+    from Banyan import Banyan, QUERYFILELIST, GETFILE
 
 
 class BanyanShell(cmd.Cmd):
-    intro = '''
-Banyan Command Line Shell v0.1
--------------------------------------
-Developed and Maintained By OpenWeavers
-
-Visit https://openweavers.github.io/banyan for details
-
-Type "help" or "?" for list of commands
-
-Type "exit" to exit
-    '''
+    intro = """
+    Banyan Command Line Shell v0.1
+    -------------------------------------
+    Developed and Maintained By OpenWeavers
+    
+    Visit https://openweavers.github.io/banyan for details
+    
+    Type "help" or "?" for list of commands
+    
+    Type "exit" to exit
+    """
     prompt = '(banyan) -> '
     name = None
     app = None
@@ -105,20 +104,49 @@ Type "exit" to exit
         if not self.is_okay(args, arglen=0):
             return
         print("Banyan Watch Directory : {}".format(self.app.watch_directory))
-        print("Banyan Download Directory : {}".format(self.app.watch_directory))
+        print("Banyan Download Directory : {}".format(self.app.download_directory))
         print("Local File List")
         print("Name \t Size")
         for (file, size) in self.app.local_files:
             print("{0} \t {1}".format(file, size))
+        print("Downloads List")
+        print("Name \t Size")
+        for child in Path(self.app.download_directory).iterdir():
+            if Path.is_file(child):
+                print("{0} \t {1}".format(child, Path(child).stat().st_size))
 
     def complete_ls(self, text, line, begin_idx, end_idx):
         return [x for x in self.app.peer.peer_list.values() if x.startswith(text)]
+
+    def do_download(self, args):
+        """
+        Download a file from specified peer
+
+        Syntax:
+            download peername filename
+
+        Usage:
+            download BitBot t.pdf
+        """
+        args = self.parse(args)
+        if not self.is_okay(args, arglen=2):
+            return
+        if args[0] not in self.app.peer.peer_list.values():
+            print("Invalid Peer {0}".format(args[0]))
+            return
+        ip = [x for x in self.app.peer.peer_list if self.app.peer.peer_list[x] == args[0]][0]
+        if args[1] not in [x[0] for x in self.app.files_available[ip]]:
+            print("Peer {0} does not have File {1}. Try sync again".format(*args))
+            return
+        print("Please wait while downloading...")
+        self.app.peer.send_to_peer(ip, GETFILE, args[1])
+        print("Download Successful")
 
     def emptyline(self):
         pass
 
     def parse(self, args):
-        return args.split()
+        return [x.strip() for x in args.split()]
 
     def is_okay(self, args, check_app=True, check_len=True, arglen=0):
         if check_app and not self.app:

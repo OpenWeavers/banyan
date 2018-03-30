@@ -82,7 +82,7 @@ class Banyan:
     def handle_reply_file_list(self, peer_conn: PeerConnection, data: str):
         # print("Entered Handle")
         file_list = json.loads(data)
-        print("Data", data)
+        # print("Data", data)
         self.files_available[peer_conn.peer_addr] = file_list
 
     def handle_get_file(self, peer_conn: PeerConnection, filename: str):

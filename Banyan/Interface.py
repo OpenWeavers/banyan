@@ -9,11 +9,11 @@ else:
 
 class BanyanShell(cmd.Cmd):
     intro = """
-    Banyan Command Line Shell v0.1
+    Banyan Command Line Shell v1
     -------------------------------------
     Developed and Maintained By OpenWeavers
     
-    Visit https://openweavers.github.io/banyan for details
+    Project: https://github.com/OpenWeavers/banyan
     
     Type "help" or "?" for list of commands
     

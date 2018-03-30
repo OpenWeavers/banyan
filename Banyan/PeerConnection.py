@@ -70,3 +70,5 @@ class PeerConnection:
 
     def __del__(self):
         self.sock_file.close()
+        self.sock.close()
+

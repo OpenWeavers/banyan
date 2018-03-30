@@ -59,17 +59,20 @@ class BanyanShell(cmd.Cmd):
         """Prints peer list"""
         if not self.is_okay(args):
             return
-        print("    IP     | Peer Name    ")
-        print("--------------------------")
+        print("{0:^16} {1:^16}".format("IP", "Name"))
+        print("-" * 32)
         for peer in self.app.peer.peer_list:
-            print(peer, self.app.peer.peer_list[peer], sep='|')
+            print("{0:16} {1:^15}".format(peer, self.app.peer.peer_list[peer]))
+        print()
 
     def do_sync(self, args):
         """Retrieves the file list from each peer"""
         if not self.is_okay(args):
             return
         for peer in self.app.peer.peer_list:
+            print("Syncing with {0}".format(peer))
             self.app.peer.send_to_peer(peer, QUERYFILELIST, '')
+        print()
 
     def do_ls(self, args):
         """Lists the files from given name.
@@ -87,17 +90,20 @@ class BanyanShell(cmd.Cmd):
         if len(args) == 0:
             for ip, file_list in self.app.files_available.items():
                 print("Peer IP : {0}".format(ip))
+                print("{0:^15} \t {1:^10}".format("Name", "Size"))
+                print("-" * 36)
                 for (file, size) in file_list:
-                    print("{0} \t {1}".format(file, size))
-                print()
+                    print("{0:15} \t {1:10}K".format(file, size // 1024))
         else:
             ip = [x for x in self.app.peer.peer_list if self.app.peer.peer_list[x] == args[0].strip()]
             try:
-                print("Name \t Size")
+                print("{0:^15} \t {1:^10}".format("Name", "Size"))
+                print("-" * 36)
                 for (file, size) in self.app.files_available[ip[0]]:
-                    print("{0} \t {1}".format(file, size))
+                    print("{0:15} \t {1:10}K".format(file, size // 1024))
             except IndexError:
                 print("{} not in Peer List".format(args[0]))
+        print()
 
     def do_status(self, args):
         """View Current Status of Banyan Client"""
@@ -105,15 +111,21 @@ class BanyanShell(cmd.Cmd):
             return
         print("Banyan Watch Directory : {}".format(self.app.watch_directory))
         print("Banyan Download Directory : {}".format(self.app.download_directory))
+        print("\n")
         print("Local File List")
-        print("Name \t Size")
-        for (file, size) in self.app.local_files:
-            print("{0} \t {1}".format(file, size))
+        print("{0:^15} \t {1:^10}".format("Name", "Size"))
+        print("-" * 36)
+        for child in Path(self.app.watch_directory).iterdir():
+            if Path.is_file(child):
+                print("{0:15} \t {1:10}K".format(child.name, Path(child).stat().st_size // 1024))
+        print("\n")
         print("Downloads List")
-        print("Name \t Size")
+        print("{0:^15} \t {1:^10}".format("Name", "Size"))
+        print("-" * 36)
         for child in Path(self.app.download_directory).iterdir():
             if Path.is_file(child):
-                print("{0} \t {1}".format(child, Path(child).stat().st_size))
+                print("{0:15} \t {1:10}K".format(child.name, Path(child).stat().st_size // 1024))
+        print()
 
     def complete_ls(self, text, line, begin_idx, end_idx):
         return [x for x in self.app.peer.peer_list.values() if x.startswith(text)]
@@ -140,7 +152,7 @@ class BanyanShell(cmd.Cmd):
             return
         print("Please wait while downloading...")
         self.app.peer.send_to_peer(ip, GETFILE, args[1])
-        print("Download Successful")
+        print("Download Successful\n")
 
     def emptyline(self):
         pass
@@ -156,16 +168,6 @@ class BanyanShell(cmd.Cmd):
             print('Invalid Usage')
             return False
         return True
-
-    def can_exit(self):
-        return True
-
-    def onecmd(self, line):
-        r = super(BanyanShell, self).onecmd(line)
-        if r and (self.can_exit() or
-                  input('exit anyway ? (yes/no):') == 'yes'):
-            return True
-        return False
 
     def do_exit(self, s):
         """Exit from the Banyan Shell"""

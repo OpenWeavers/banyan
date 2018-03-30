@@ -28,7 +28,7 @@ logger = BanyanLogger.get_logger("Banyan",stdout=True)
 class Banyan:
     def __init__(self, max_peers: int, name: str, bcast_ip: str = "255.255.255.255"):
         self.peer = Peer(name, bcast_ip)
-        self.max_peers = max_peers
+        self.max_peers = int(max_peers)
         Thread(target=self.peer.peer_listen).start()
         Thread(target=self.peer.receive_bcast).start()
         self.handlers = {
@@ -133,6 +133,7 @@ class Banyan:
         return False
 
     def update_peers(self):
+        self.peer.peer_list = {}
         self.peer.discover()
 
     def __del__(self):

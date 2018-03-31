@@ -19,7 +19,7 @@ The workflow is organized as follows
 
 Run as
 
-    python BanyanInterface.py
+    python BanyanCLI.py
 
 It will open up an interactive shell
 

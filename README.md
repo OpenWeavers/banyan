@@ -19,7 +19,7 @@ The workflow is organized as follows
 
 Run as
 
-    python Interface.py
+    python BanyanInterface.py
 
 It will open up an interactive shell
 
@@ -38,8 +38,8 @@ Command List
 | `exit`       | -       | Go out of Banyan Shell |
 
 # Future Work
-- Efficient Peer Discovery Mehods (other than Broadcast)
-- Efficient File Transfer Approach (not the peek speed is around 200Kbps over LAN)
+- Efficient Peer Discovery Methods (other than Broadcast)
+- Efficient File Transfer Approach (now the peek speed is around 1.6 Mbps over LAN)
 - Extending the service to Internet
 
 

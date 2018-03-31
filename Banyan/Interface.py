@@ -1,4 +1,5 @@
 import cmd
+import os
 from pathlib import Path
 
 if __name__ is not None and "." in __name__:
@@ -154,8 +155,34 @@ class BanyanShell(cmd.Cmd):
         self.app.peer.send_to_peer(ip, GETFILE, args[1])
         print("Download Successful\n")
 
+    def complete_download(self, text, line, begin_idx, end_idx):
+        parts = line.split()
+        partlen = len(parts) - 1
+        peer_names = self.app.peer.peer_list.values()
+        if partlen == 0 or (partlen == 1 and begin_idx != end_idx):
+            return [x for x in peer_names if x.startswith(text)]
+        elif (partlen == 1 and begin_idx == end_idx) or partlen == 2:
+            ip = [x for x in self.app.peer.peer_list if self.app.peer.peer_list[x] == parts[1].strip()]
+            if len(ip) == 0:
+                return []
+            return [x[0] for x in self.app.files_available[ip[0]] if x[0].startswith(text)]
+
     def emptyline(self):
         pass
+
+    def do_shell(self, s):
+        """
+        Execute shell commands. Also '!' Prefix can be used
+
+        Syntax:
+            shell cmd
+            !cmd
+
+        Example:
+            shell ls
+            !ls -l
+        """
+        os.system(s)
 
     def parse(self, args):
         return [x.strip() for x in args.split()]
@@ -172,6 +199,28 @@ class BanyanShell(cmd.Cmd):
     def do_exit(self, s):
         """Exit from the Banyan Shell"""
         return True
+
+    def do_run(self, args):
+        """
+        Runs specified script in interactive shell
+
+        Syntax:
+            run filename
+
+        Example:
+            run .banyanrc
+        """
+        args = self.parse(args)
+        if not self.is_okay(args, check_app=False, arglen=1):
+            return
+        try:
+            with open(args[0], 'r') as f:
+                self.cmdqueue += [x for x in f.readlines()]
+        except IOError:
+            print("Error while opening {0}".format(args[0]))
+
+    def complete_run(self, text, line, begin_idx, end_idx):
+        return [x for x in os.listdir(os.getcwd()) if x.startswith(text)]
 
     do_EOF = do_exit
 

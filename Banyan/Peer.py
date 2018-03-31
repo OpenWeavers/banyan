@@ -75,7 +75,6 @@ class Peer:
                 peer.send("PONG", json.dumps({'name': self.name}))
 
     def peer_listen(self):
-
         while True:
             conn, addr = self.conn_soc.accept()
             peer = PeerConnection(addr[0], sock=conn)

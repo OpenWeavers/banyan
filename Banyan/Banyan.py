@@ -22,7 +22,7 @@ PONG = "PONG"
 REPLY = "REPL"
 ERROR = "ERRR"
 
-logger = BanyanLogger.get_logger("Banyan",stdout=True)
+logger = BanyanLogger.get_logger("Banyan", stdout=True)
 
 
 class Banyan:

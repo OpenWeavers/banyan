@@ -20,7 +20,7 @@ def get_host_ip():
 
 
 class Peer:
-    def __init__(self, name:str, bcast_ip:str):
+    def __init__(self, name: str, bcast_ip: str):
         self.name = name
         self.bcast_ip = bcast_ip
         logger.info('Initializing Banyan in your local network...')
@@ -41,10 +41,10 @@ class Peer:
         # self.bcast_recv_soc.bind(('', BCAST_RECV))
         logger.info("Started at " + get_host_ip() + ":" + str(CONN_PORT))
 
-    def add_handlers(self, message_type:str, handler):
+    def add_handlers(self, message_type: str, handler):
         self.handlers[message_type] = handler
 
-    def add_peer(self, addr:str, data:str):
+    def add_peer(self, addr: str, data: str):
         """
         Adds a peer to internal dictionary
         :param addr: IP adress of the peer
@@ -79,21 +79,21 @@ class Peer:
             conn, addr = self.conn_soc.accept()
             peer = PeerConnection(addr[0], sock=conn)
             (message_type, data_1) = peer.receive()
-            logger.debug("Recieved {0} message from {1}:{2} Data: {3}".format(message_type,*addr,data_1))
+            logger.debug("Recieved {0} message from {1}:{2} Data: {3}".format(message_type, *addr, data_1))
             # print(message_type + " : " + data_1)
             # del peer
             # Execute the associated Handle
             self.handlers[message_type](peer, data_1)
 
-    def send_to_peer(self, peer_addr:str, message_type:str, data:str):
+    def send_to_peer(self, peer_addr: str, message_type: str, data: str):
         peer = PeerConnection(peer_addr)
         if message_type == "GETF":
             peer.temp_info = data
         peer.send(message_type, data)
         received_message_type, reply = peer.receive()
         self.handlers[received_message_type](peer, reply)
-        #print(reply)
-        #return received_message_type, reply
+        # print(reply)
+        # return received_message_type, reply
 
     def __del__(self):
         self.bcast_soc.close()

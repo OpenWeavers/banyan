@@ -1,5 +1,5 @@
 # Banyan
-Banyan is a simple P2P application protocol
+Banyan is a simple peer to peer application protocol
 
 # What can it do currently?
 - File Sharing over LAN

@@ -172,19 +172,35 @@ class BanyanShell(cmd.Cmd):
         pass
 
     def do_search(self, args):
-        if not self.is_okay(args, arglen=2):
+        """
+        Searches a file from the available file list and prints its peers.
+
+        Syntax:
+        search filename
+
+        Usage:
+        search t.pdf
+        """
+        args = self.parse(args)
+        if not self.is_okay(args, arglen=1):
             return
         results = []
         for peer in self.app.peer.peer_list:
-            [results.append([file, peer]) for file in self.app.files_available[peer] \
+            [results.append([file, self.app.peer.peer_list[peer]]) for file in self.app.files_available[peer] \
              if args[1] in file or file in args[1]]
         if len(results) == 0:
             print("0 search results found!")
         else:
             print("{} search results found!\n".format(len(results)))
-            print("{:<20} {:<20}".format('Files', 'Peers'))
+            print("{:20} {:20}".format('Files', 'Peers'))
             print("-"*40)
-            [print("{:<20} {:<20}".format(file[0], file[1])) for file in results]
+            [print("{:20} {:20}".format(file[0], file[1])) for file in results]
+
+    def complete_search(self, text, line, begin_idx, end_idx):
+        files = []
+        for peer in self.app.peer.peer_list:
+            [files.append(file) for file in self.app.files_available[peer] if text in file or file in text]
+        return files
 
     def do_shell(self, s):
         """
@@ -214,8 +230,9 @@ class BanyanShell(cmd.Cmd):
 
     def do_exit(self, s):
         """Exit from the Banyan Shell"""
-        raise KeyboardInterrupt
-        del self.app
+        #raise KeyboardInterrupt
+        copy = self.app
+        del copy
         return True
 
     def do_run(self, args):

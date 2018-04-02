@@ -141,9 +141,10 @@ class Banyan:
         self.peer.discover()
 
     def __del__(self):
+        #print('jello')
         for thread in self.threads:
             if thread.is_alive:
-                # thread.stop()
+                #thread.stop()
                 pass
         del self.peer
 

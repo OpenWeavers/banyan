@@ -1,6 +1,7 @@
 import cmd
 import os
 from pathlib import Path
+import sys
 
 if __name__ is not None and "." in __name__:
     from .Banyan import Banyan, QUERYFILELIST, GETFILE
@@ -170,6 +171,21 @@ class BanyanShell(cmd.Cmd):
     def emptyline(self):
         pass
 
+    def do_search(self, args):
+        if not self.is_okay(args, arglen=2):
+            return
+        results = []
+        for peer in self.app.peer.peer_list:
+            [results.append([file, peer]) for file in self.app.files_available[peer] \
+             if args[1] in file or file in args[1]]
+        if len(results) == 0:
+            print("0 search results found!")
+        else:
+            print("{} search results found!\n".format(len(results)))
+            print("{:<20} {:<20}".format('Files', 'Peers'))
+            print("-"*40)
+            [print("{:<20} {:<20}".format(file[0], file[1])) for file in results]
+
     def do_shell(self, s):
         """
         Execute shell commands. Also '!' Prefix can be used
@@ -198,6 +214,8 @@ class BanyanShell(cmd.Cmd):
 
     def do_exit(self, s):
         """Exit from the Banyan Shell"""
+        raise KeyboardInterrupt
+        del self.app
         return True
 
     def do_run(self, args):

@@ -29,8 +29,11 @@ class Banyan:
     def __init__(self, max_peers: int, name: str, bcast_ip: str = "255.255.255.255"):
         self.peer = Peer(name, bcast_ip)
         self.max_peers = int(max_peers)
-        Thread(target=self.peer.peer_listen).start()
-        Thread(target=self.peer.receive_bcast).start()
+        self.threads = []
+        self.threads += [Thread(target=self.peer.peer_listen)]
+        self.threads += [Thread(target=self.peer.receive_bcast)]
+        for thread in self.threads:
+            thread.daemon = True
         self.handlers = {
             PONG: self.handle_insert_peer,
             QUERYFILELIST: self.handle_query_file_list,
@@ -138,6 +141,10 @@ class Banyan:
         self.peer.discover()
 
     def __del__(self):
+        for thread in self.threads:
+            if thread.is_alive:
+                # thread.stop()
+                pass
         del self.peer
 
 

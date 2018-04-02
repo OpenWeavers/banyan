@@ -62,28 +62,34 @@ class Peer:
         self.bcast_soc.sendto(b'PING', (self.bcast_ip, BCAST_PORT))
 
     def receive_bcast(self):
-        while True:
-            msg, addr = self.bcast_soc.recvfrom(1024)
-            if addr[0] != get_host_ip():
-                logger.debug("Broadcast from " + addr[0] + "Message :" + msg.decode())
-                # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                # s.connect((addr[0], CONN_PORT))
-                # s.sendall(b'PONG')
-                # data = s.recv(1024)
-                # s.close()
-                peer = PeerConnection(addr[0])
-                peer.send("PONG", json.dumps({'name': self.name}))
+        try:
+            while True:
+                msg, addr = self.bcast_soc.recvfrom(1024)
+                if addr[0] != get_host_ip():
+                    logger.debug("Broadcast from " + addr[0] + "Message :" + msg.decode())
+                    # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    # s.connect((addr[0], CONN_PORT))
+                    # s.sendall(b'PONG')
+                    # data = s.recv(1024)
+                    # s.close()
+                    peer = PeerConnection(addr[0])
+                    peer.send("PONG", json.dumps({'name': self.name}))
+        except KeyboardInterrupt:
+            return
 
     def peer_listen(self):
-        while True:
-            conn, addr = self.conn_soc.accept()
-            peer = PeerConnection(addr[0], sock=conn)
-            (message_type, data_1) = peer.receive()
-            logger.debug("Recieved {0} message from {1}:{2} Data: {3}".format(message_type, *addr, data_1))
-            # print(message_type + " : " + data_1)
-            # del peer
-            # Execute the associated Handle
-            self.handlers[message_type](peer, data_1)
+        try:
+            while True:
+                conn, addr = self.conn_soc.accept()
+                peer = PeerConnection(addr[0], sock=conn)
+                (message_type, data_1) = peer.receive()
+                logger.debug("Recieved {0} message from {1}:{2} Data: {3}".format(message_type, *addr, data_1))
+                # print(message_type + " : " + data_1)
+                # del peer
+                # Execute the associated Handle
+                self.handlers[message_type](peer, data_1)
+        except KeyboardInterrupt:
+            return
 
     def send_to_peer(self, peer_addr: str, message_type: str, data: str):
         peer = PeerConnection(peer_addr)

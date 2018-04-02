@@ -33,6 +33,7 @@ Command List
 | `sync`       | -       | Gets the list of Publicly Available Files |
 | `who`        | -       | View the list of Peers in the same network |
 | `ls`         | `[name]`  | Lists the files of the Peer name. If not given, Lists all Peers files|
+| `search`     | `filename` | Searches files in available file list |
 | `status`     | -       | View the status of current Peer |
 | `download`   | `peername filename` | Downloads the file |
 | `exit`       | -       | Go out of Banyan Shell |

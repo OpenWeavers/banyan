@@ -22,7 +22,7 @@ PONG = "PONG"
 REPLY = "REPL"
 ERROR = "ERRR"
 
-logger = BanyanLogger.get_logger("Banyan", stdout=True)
+logger = BanyanLogger.get_logger("Banyan", stdout=False)
 
 
 class Banyan:
@@ -150,6 +150,7 @@ class Banyan:
         del self.peer
 
 
+'''
 if __name__ == '__main__':
     app = Banyan(5, "BitBot")
     app.update_peers()
@@ -165,3 +166,4 @@ if __name__ == '__main__':
         print(app.files_available)
         print(app.peer.peer_list)
         app.peer.send_to_peer('192.168.0.104', GETFILE, "twenty.mp4")
+'''

@@ -69,5 +69,7 @@ class PeerConnection:
             return None, None
 
     def __del__(self):
-        self.sock_file.close()
-        self.sock.close()
+        if self.sock_file:
+            self.sock_file.close()
+        if self.sock:
+            self.sock.close()

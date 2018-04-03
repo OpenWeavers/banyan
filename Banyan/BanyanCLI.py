@@ -92,6 +92,7 @@ class BanyanShell(cmd.Cmd):
         if len(args) == 0:
             for ip, file_list in self.app.files_available.items():
                 print("Peer IP : {0}".format(ip))
+                print("Peer Name : {0}".format(self.app.peer.peer_list[ip]))
                 print("{0:^15} \t {1:^10}".format("Name", "Size"))
                 print("-" * 36)
                 for (file, size) in file_list:

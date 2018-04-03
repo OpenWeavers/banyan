@@ -186,9 +186,9 @@ class BanyanShell(cmd.Cmd):
         if not self.is_okay(args, arglen=1):
             return
         results = []
-        for peer in self.app.peer.peer_list:
-            [results.append([file, self.app.peer.peer_list[peer]]) for file in self.app.files_available[peer] \
-             if args[1] in file or file in args[1]]
+        for peer in self.app.peer.peer_list.keys():
+            [results.append([file[0], peer]) for file in self.app.files_available[peer] \
+             if args[0] in file[0] or file[0] in args[0]]
         if len(results) == 0:
             print("0 search results found!")
         else:
@@ -200,7 +200,7 @@ class BanyanShell(cmd.Cmd):
     def complete_search(self, text, line, begin_idx, end_idx):
         files = []
         for peer in self.app.peer.peer_list:
-            [files.append(file) for file in self.app.files_available[peer] if text in file or file in text]
+            [files.append(file[0]) for file in self.app.files_available[peer] if text in file[0] or file[0] in text]
         return files
 
     def do_shell(self, s):
@@ -247,7 +247,7 @@ class BanyanShell(cmd.Cmd):
             run .banyanrc
         """
         args = self.parse(args)
-        if not self.is_okay(args, check_app=False, arglen=1):
+        if not self.is_okay(args, check_app=False, arglen=2):
             return
         try:
             with open(args[0], 'r') as f:

@@ -78,16 +78,18 @@ class Peer:
             return
 
     def peer_listen(self):
+        def handle_connection(addr,conn):
+            peer = PeerConnection(addr[0], sock=conn)
+            (message_type, data_1) = peer.receive()
+            logger.debug("Recieved {0} message from {1}:{2} Data: {3}".format(message_type, *addr, data_1))
+            # print(message_type + " : " + data_1)
+            # del peer
+            # Execute the associated Handle
+            self.handlers[message_type](peer, data_1)
         try:
             while True:
                 conn, addr = self.conn_soc.accept()
-                peer = PeerConnection(addr[0], sock=conn)
-                (message_type, data_1) = peer.receive()
-                logger.debug("Recieved {0} message from {1}:{2} Data: {3}".format(message_type, *addr, data_1))
-                # print(message_type + " : " + data_1)
-                # del peer
-                # Execute the associated Handle
-                self.handlers[message_type](peer, data_1)
+                Thread(target=lambda : handle_connection(addr,conn)).start()
         except KeyboardInterrupt:
             return
 

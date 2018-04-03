@@ -21,7 +21,7 @@ class BanyanShell(cmd.Cmd):
     
     Type "exit" to exit
     """
-    prompt = '(banyan) -> '
+    prompt = '~> '
     name = None
     app = None
     ruler = '-'

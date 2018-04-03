@@ -34,6 +34,7 @@ class Banyan:
         self.threads += [Thread(target=self.peer.receive_bcast)]
         for thread in self.threads:
             thread.daemon = True
+            thread.start()
         self.handlers = {
             PONG: self.handle_insert_peer,
             QUERYFILELIST: self.handle_query_file_list,

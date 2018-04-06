@@ -261,5 +261,9 @@ class BanyanShell(cmd.Cmd):
     do_EOF = do_exit
 
 
-if __name__ == '__main__':
+def main():
     BanyanShell().cmdloop()
+
+
+if __name__ == '__main__':
+    main()

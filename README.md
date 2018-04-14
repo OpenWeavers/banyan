@@ -1,6 +1,9 @@
 # Banyan
 Banyan is a simple peer to peer application protocol
 
+# Installation
+```pip install banyancli```
+
 # What can it do currently?
 - File Sharing over LAN
 
@@ -17,9 +20,9 @@ The workflow is organized as follows
 
 # Documentation
 
-Run as
+After installation, run as
 
-    python BanyanCLI.py
+    banyan
 
 It will open up an interactive shell
 

@@ -1,7 +1,6 @@
 import cmd
 import os
 from pathlib import Path
-import sys
 
 if __name__ is not None and "." in __name__:
     from .Banyan import Banyan, QUERYFILELIST, GETFILE

@@ -1,9 +1,9 @@
 from setuptools import setup
 
 setup(
-    name='banyan',
-    version='1',
-    packages=['Banyan'],
+    name='banyancli',
+    version='1.2',
+    packages=['banyancli'],
     url='https://openweavers.github.io/banyan/',
     license='GPLv3',
     author='Vinyas N S, Vinayaka K V, Monish S R',
@@ -11,7 +11,7 @@ setup(
     description='A simple P2P application protocol',
     entry_points={
         'console_scripts': [
-            'banyan=Banyan.BanyanCLI:main',
+            'banyan=banyancli.BanyanCLI:main',
         ],
     },
 )
